@@ -8,7 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.util.Vector;
 
-public class Station implements ConfigurationSerializable{
+public class Station implements ConfigurationSerializable {
 
 	private UUID stationId = null;
 	private String name = "";

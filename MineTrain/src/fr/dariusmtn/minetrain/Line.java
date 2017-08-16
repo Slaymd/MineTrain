@@ -7,7 +7,7 @@ import java.util.UUID;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
-public class Line implements ConfigurationSerializable{
+public class Line implements ConfigurationSerializable {
 
 	private String longname = "";
 	private String smallname = "";

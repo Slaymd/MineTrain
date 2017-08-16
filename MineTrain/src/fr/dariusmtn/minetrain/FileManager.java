@@ -16,7 +16,7 @@ public class FileManager {
     }
     
     /**
-     * 
+     *  
      * @return ArrayList<Station>
      */
     public ArrayList<Station> getStations() {
