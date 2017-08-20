@@ -1,31 +1,30 @@
-package fr.dariusmtn.minetrain;
+package fr.dariusmtn.minetrain.object;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import org.bukkit.ChatColor;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 
 public class Line implements ConfigurationSerializable {
 
 	private String longname = "";
 	private String smallname = "";
-	private ChatColor color = null;
 	private UUID lineId = null;
+	private LineType lineType = null;
 	
-	public Line(UUID lineId, String longname, String smallname, ChatColor color) {
+	public Line(UUID lineId, String longname, String smallname, LineType lineType) {
 		this.setLineId(lineId);
 		this.setLongname(longname);
 		this.setSmallname(smallname);
-		this.setColor(color);
+		this.setLineType(lineType);
 	}
 	
 	public Line(Map<String, Object> map) {
 		this.setLongname((String) map.get("longname"));
 		this.setSmallname((String) map.get("smallname"));
-		this.setColor(ChatColor.valueOf((String) map.get("color")));
 		this.setLineId(UUID.fromString((String) map.get("lineId")));
+		this.setLineType(LineType.valueOf((String) map.get("linetype")));
 	}
 	
 	@Override
@@ -34,7 +33,7 @@ public class Line implements ConfigurationSerializable {
 		map.put("longname", this.longname);
 		map.put("smallname", this.smallname);
 		map.put("lineId", this.lineId.toString());
-		map.put("color", this.color.toString());
+		map.put("linetype", this.lineType.toString());
 		return map;
 	}
 	
@@ -57,20 +56,6 @@ public class Line implements ConfigurationSerializable {
 	}
 
 	/**
-	 * @return the color
-	 */
-	public ChatColor getColor() {
-		return color;
-	}
-
-	/**
-	 * @param color the color to set
-	 */
-	public void setColor(ChatColor color) {
-		this.color = color;
-	}
-
-	/**
 	 * @return the smallname
 	 */
 	public String getSmallname() {
@@ -81,7 +66,7 @@ public class Line implements ConfigurationSerializable {
 	 * @param smallname the smallname to set
 	 */
 	public void setSmallname(String smallname) {
-		this.smallname = smallname;
+		this.smallname = smallname.replaceAll("&", "§");
 	}
 
 	/**
@@ -95,7 +80,21 @@ public class Line implements ConfigurationSerializable {
 	 * @param longname the longname to set
 	 */
 	public void setLongname(String longname) {
-		this.longname = longname;
+		this.longname = longname.replaceAll("&", "§");
+	}
+
+	/**
+	 * @return the lineType
+	 */
+	public LineType getLineType() {
+		return lineType;
+	}
+
+	/**
+	 * @param lineType the lineType to set
+	 */
+	public void setLineType(LineType lineType) {
+		this.lineType = lineType;
 	}
 	
 	

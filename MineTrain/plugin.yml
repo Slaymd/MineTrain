@@ -6,3 +6,6 @@ commands:
   minetrain:
     description: MineTrain main command.
     aliases: [mt,mtn]
+  minetrainconfig:
+    description: MineTrain config command.
+    aliases: [mtc,mtnc]
