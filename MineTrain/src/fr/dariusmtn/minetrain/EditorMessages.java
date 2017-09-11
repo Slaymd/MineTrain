@@ -52,13 +52,13 @@ public class EditorMessages {
 	    	fm = new FancyMessage("[Cancel]").color(ChatColor.RED).tooltip("§cCancel").command("/minetrainconfig canceleditor");
 		} else if(phase == 11) {
 			player.sendMessage("§6➤ Add a minecart launcher");
-			player.sendMessage("§b★ Click on the station track §o(where the minecart will be stopped)");
+			player.sendMessage("§b★ §nLeft click§b on the station track §o(where the minecart will be stopped)");
 			fm = new FancyMessage("[Cancel]").color(ChatColor.RED).tooltip("§cCancel").command("/minetrainconfig canceleditor").then(" ")
 			.then("[Pause editor to edit world]").color(ChatColor.LIGHT_PURPLE).style(ChatColor.ITALIC).tooltip("§dIf you need to edit your world before this step, click here :D")
 			.command("/minetrainconfig pauseeditor");
 		} else if(phase == 12) {
-			player.sendMessage("§b★ Click on the §ldirection track§b §e(Powered Rail)§b just next to the station point §o(in what direction the minecart will be launched)");
-			player.sendMessage("§7★ Click on the §lstation track§7 §o(Detector Rail)§7 to set as a terminus");
+			player.sendMessage("§b★ §nLeft click§b on the §ldirection track§b §e(Powered Rail)§b just next to the station point §o(in what direction the minecart will be launched)");
+			player.sendMessage("§7★ Left click on the §lstation track§7 §o(Detector Rail)§7 to set as a terminus");
 			fm = new FancyMessage("[Cancel]").color(ChatColor.RED).tooltip("§cCancel").command("/minetrainconfig canceleditor").then(" ")
 			.then("[Pause editor to edit world]").color(ChatColor.LIGHT_PURPLE).style(ChatColor.ITALIC).tooltip("§dIf you need to edit your world before this step, click here :D")
 			.command("/minetrainconfig pauseeditor");
