@@ -16,4 +16,7 @@ Yes and... No. *TrainCarts* is a really nice plugin (the best minecart managemen
 
 Yes! That's why MineTrain lightness is great, you can create light rail (tramway) or suspended metro line and station without awfully redstone circuits!
 
+<img src="https://i.goopics.net/eRZ8j.jpg" alt="Tram station"/>
+
 ## :metro: Let's start creating your public transit network!
+
