@@ -20,3 +20,8 @@ Yes! That's why MineTrain lightness is great, you can create light rail (tramway
 
 ## :metro: Let's start creating your public transit network!
 
+Go to the Wiki to get more informations: https://github.com/Slaymd/MineTrain/wiki
+
+## :pencil: Discord
+
+Talks, suggestions, bugs: https://discord.gg/w628upr
