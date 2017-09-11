@@ -84,44 +84,14 @@ public class PlayerInteractListener implements Listener {
 		//Editor
 		if(plugin.editor.containsKey(player)) {
 			PlayerEditor pe = plugin.editor.get(player);
-			if(e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
+			if(e.getAction() == Action.LEFT_CLICK_BLOCK) {
 				int phase = pe.getPhase();
 				if(e.getClickedBlock().getType().toString().contains("RAIL")) {
 					Location clickedLoc = e.getClickedBlock().getLocation();
 					//Rail object
 					Rails clickedRail = new Rails(e.getClickedBlock().getType(),e.getClickedBlock().getData());
 					//Setting station block phase
-					if(phase == 11) {
-						e.setCancelled(true);
-						Block bX = new Location(clickedLoc.getWorld(), clickedLoc.clone().getX()-1,clickedLoc.getY(),clickedLoc.getZ()).getBlock();
-						Block bZ = new Location(clickedLoc.getWorld(), clickedLoc.getX(),clickedLoc.getY(),clickedLoc.clone().getZ()-1).getBlock();
-						Block bX2 = new Location(clickedLoc.getWorld(), clickedLoc.clone().getX()+1,clickedLoc.getY(),clickedLoc.getZ()).getBlock();
-						Block bZ2 = new Location(clickedLoc.getWorld(), clickedLoc.getX(),clickedLoc.getY(),clickedLoc.clone().getZ()+1).getBlock();
-						//if track direction coloration worked station is valid :D
-						if(changeNextRails(clickedRail, clickedLoc, Material.POWERED_RAIL, bX, bZ, 2, true, BlockFace.SELF) || changeNextRails(clickedRail, clickedLoc, Material.POWERED_RAIL, bX2, bZ2, -2, true, BlockFace.SELF)) {
-							if(!plugin.stlocEditor.containsKey(player) || pe.getStation().getStarts().size() == 0) {
-								plugin.stlocEditor.remove(player);
-								//Saving station track
-								ArrayList<Location> startcrea = new ArrayList<Location>();
-								startcrea.add(0, clickedLoc);
-								plugin.stlocEditor.put(player, startcrea);
-								//set station to detector rail
-								clickedLoc.getBlock().setType(Material.DETECTOR_RAIL);
-								clickedRail.setDirection(BlockFace.SELF, false);
-								e.getClickedBlock().setData(clickedRail.getData());
-								//particles (useless, but it's good :33)
-								clickedLoc.getWorld().spawnParticle(Particle.FLAME, clickedLoc.add(0.5, 0.5, 0.5), 20, 0.1, 0.1, 0.1, 0.05);
-								//Messages
-								player.sendMessage(" ");
-								player.sendMessage("§aAdded station point: §f(§7§o" + clickedLoc.getX() + "§f, §7§o" + clickedLoc.getY() + "§f, §7§o" + clickedLoc.getZ() + "§f)");
-								player.sendMessage("§7§l§m-----");
-								plugin.getEditorMessages().sendEditorMessage(player, 12);
-								//New phase
-								pe.setPhase(12);
-								return;
-							}
-						}
-					} else if(phase == 12) {
+					if(phase == 12) {
 						e.setCancelled(true);
 						if(plugin.stlocEditor.containsKey(player)) {
 							ArrayList<Location> startcrea = plugin.stlocEditor.get(player);
@@ -161,7 +131,40 @@ public class PlayerInteractListener implements Listener {
 							player.sendMessage("§cThis direction track isn't valid.");
 							return;
 						}
+						return;
+					} else if(phase == 11) {
+						e.setCancelled(true);
+						Block bX = new Location(clickedLoc.getWorld(), clickedLoc.clone().getX()-1,clickedLoc.getY(),clickedLoc.getZ()).getBlock();
+						Block bZ = new Location(clickedLoc.getWorld(), clickedLoc.getX(),clickedLoc.getY(),clickedLoc.clone().getZ()-1).getBlock();
+						Block bX2 = new Location(clickedLoc.getWorld(), clickedLoc.clone().getX()+1,clickedLoc.getY(),clickedLoc.getZ()).getBlock();
+						Block bZ2 = new Location(clickedLoc.getWorld(), clickedLoc.getX(),clickedLoc.getY(),clickedLoc.clone().getZ()+1).getBlock();
+						//if track direction coloration worked station is valid :D
+						if(changeNextRails(clickedRail, clickedLoc, Material.POWERED_RAIL, bX, bZ, 2, true, BlockFace.SELF) || changeNextRails(clickedRail, clickedLoc, Material.POWERED_RAIL, bX2, bZ2, -2, true, BlockFace.SELF)) {
+							if(!plugin.stlocEditor.containsKey(player) || pe.getStation().getStarts().size() == 0) {
+								plugin.stlocEditor.remove(player);
+								//Saving station track
+								ArrayList<Location> startcrea = new ArrayList<Location>();
+								startcrea.add(0, clickedLoc);
+								plugin.stlocEditor.put(player, startcrea);
+								//set station to detector rail
+								clickedLoc.getBlock().setType(Material.DETECTOR_RAIL);
+								clickedRail.setDirection(BlockFace.SELF, false);
+								e.getClickedBlock().setData(clickedRail.getData());
+								//particles (useless, but it's good :33)
+								clickedLoc.getWorld().spawnParticle(Particle.FLAME, clickedLoc.add(0.5, 0.5, 0.5), 20, 0.1, 0.1, 0.1, 0.05);
+								//Messages
+								player.sendMessage(" ");
+								player.sendMessage("§aAdded station point: §f(§7§o" + clickedLoc.getX() + "§f, §7§o" + clickedLoc.getY() + "§f, §7§o" + clickedLoc.getZ() + "§f)");
+								player.sendMessage("§7§l§m-----");
+								plugin.getEditorMessages().sendEditorMessage(player, 12);
+								//New phase
+								pe.setPhase(12);
+								return;
+							}
+						}
+						return;
 					}
+					return;
 				}
 				if(phase == 15) {
 					e.setCancelled(true);
