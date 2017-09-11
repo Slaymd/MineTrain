@@ -49,6 +49,9 @@ public class Main extends JavaPlugin{
 		plugman.registerEvents(new VehicleDestroyListener(this), this);
 		//Config
 		this.saveDefaultConfig();
+		//Stats (bstats) https://bstats.org/plugin/bukkit/MineTrain
+		@SuppressWarnings("unused")
+		Metrics metrics = new Metrics(this);
 	}
 	
 	/**
