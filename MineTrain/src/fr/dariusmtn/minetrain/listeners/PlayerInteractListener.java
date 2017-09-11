@@ -84,8 +84,8 @@ public class PlayerInteractListener implements Listener {
 		//Editor
 		if(plugin.editor.containsKey(player)) {
 			PlayerEditor pe = plugin.editor.get(player);
+			int phase = pe.getPhase();
 			if(e.getAction() == Action.LEFT_CLICK_BLOCK) {
-				int phase = pe.getPhase();
 				if(e.getClickedBlock().getType().toString().contains("RAIL")) {
 					Location clickedLoc = e.getClickedBlock().getLocation();
 					//Rail object
@@ -166,6 +166,9 @@ public class PlayerInteractListener implements Listener {
 					}
 					return;
 				}
+			} else if(e.getAction() == Action.RIGHT_CLICK_BLOCK) {
+				if(phase == 11 || phase == 12)
+					player.sendMessage("§bBad click! We expected a §bleft click§c ;)");
 				if(phase == 15) {
 					e.setCancelled(true);
 					if(e.getAction() != Action.RIGHT_CLICK_BLOCK)

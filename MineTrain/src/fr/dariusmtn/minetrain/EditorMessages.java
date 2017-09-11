@@ -85,7 +85,7 @@ public class EditorMessages {
 			.then(" ").then("[Next Step]").color(ChatColor.GOLD).style(ChatColor.BOLD).tooltip("§aGo to next step").command("/minetrainconfig stationpointnextstep");
 		} else if(phase == 15) {
 			player.sendMessage("§6➤ Add a departure button");
-			player.sendMessage("§b★ Right Click where you want a §ldeparture button§b §o(People will need to click on this button to take a minecart)");
+			player.sendMessage("§b★ §nRight Click§b where you want a §ldeparture button§b §o(People will need to click on this button to take a minecart)");
 			fm = new FancyMessage("[Cancel]").color(ChatColor.RED).tooltip("§cCancel").command("/minetrainconfig canceleditor").then(" ")
 			.then("[Pause editor to edit world]").color(ChatColor.LIGHT_PURPLE).style(ChatColor.ITALIC).tooltip("§dIf you need to edit your world before this step, click here :D")
 			.command("/minetrainconfig pauseeditor");
