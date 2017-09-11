@@ -15,15 +15,15 @@ public class Line implements ConfigurationSerializable {
 	
 	public Line(UUID lineId, String longname, String smallname, LineType lineType) {
 		this.setLineId(lineId);
-		this.setLongname(longname);
-		this.setSmallname(smallname);
+		this.setName(longname);
+		this.setAcronym(smallname);
 		this.setLineType(lineType);
 	}
 	
 	public Line(Map<String, Object> map) {
-		this.setLongname((String) map.get("longname"));
-		this.setSmallname((String) map.get("smallname"));
-		this.setLineId(UUID.fromString((String) map.get("lineId")));
+		this.setName((String) map.get("longname"));
+		this.setAcronym((String) map.get("smallname"));
+		this.setLineId((UUID) map.get("lineId"));
 		this.setLineType(LineType.valueOf((String) map.get("linetype")));
 	}
 	
@@ -32,7 +32,6 @@ public class Line implements ConfigurationSerializable {
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("longname", this.longname);
 		map.put("smallname", this.smallname);
-		map.put("lineId", this.lineId.toString());
 		map.put("linetype", this.lineType.toString());
 		return map;
 	}
@@ -56,30 +55,34 @@ public class Line implements ConfigurationSerializable {
 	}
 
 	/**
-	 * @return the smallname
+	 * @return the acronym
 	 */
-	public String getSmallname() {
-		return smallname;
+	public String getAcronym() {
+		if(this.smallname != "") {
+			return smallname;
+		} else {
+			return this.getName();
+		}
 	}
 
 	/**
-	 * @param smallname the smallname to set
+	 * @param smallname the acronym to set
 	 */
-	public void setSmallname(String smallname) {
+	public void setAcronym(String smallname) {
 		this.smallname = smallname.replaceAll("&", "§");
 	}
 
 	/**
-	 * @return the longname
+	 * @return the line name
 	 */
-	public String getLongname() {
+	public String getName() {
 		return longname;
 	}
 
 	/**
-	 * @param longname the longname to set
+	 * @param longname the name to set
 	 */
-	public void setLongname(String longname) {
+	public void setName(String longname) {
 		this.longname = longname.replaceAll("&", "§");
 	}
 

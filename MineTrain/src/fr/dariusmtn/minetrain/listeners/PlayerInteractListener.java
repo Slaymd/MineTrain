@@ -1,5 +1,6 @@
 package fr.dariusmtn.minetrain.listeners;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.bukkit.ChatColor;
@@ -17,6 +18,7 @@ import org.bukkit.material.Button;
 import org.bukkit.material.Rails;
 
 import fr.dariusmtn.minetrain.Main;
+import fr.dariusmtn.minetrain.object.Line;
 import fr.dariusmtn.minetrain.object.PlayerEditor;
 import fr.dariusmtn.minetrain.object.Station;
 import mkremins.fanciful.FancyMessage;
@@ -27,8 +29,6 @@ public class PlayerInteractListener implements Listener {
 	public PlayerInteractListener(Main plugin) {
 		this.plugin = plugin;
 	}
-	
-	HashMap<Player,Location> stlocEditor = new HashMap<Player,Location>();
 	
 	@SuppressWarnings("deprecation")
 	boolean changeNextRails(Rails clickedRail, Location clickedLoc, Material finalMaterial, Block bX, Block bZ, int mod, boolean particles, BlockFace face){
@@ -81,6 +81,7 @@ public class PlayerInteractListener implements Listener {
 	@EventHandler
 	public void onPlayerInteract(PlayerInteractEvent e) {
 		Player player = e.getPlayer();
+		//Editor
 		if(plugin.editor.containsKey(player)) {
 			PlayerEditor pe = plugin.editor.get(player);
 			if(e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
@@ -90,7 +91,7 @@ public class PlayerInteractListener implements Listener {
 					//Rail object
 					Rails clickedRail = new Rails(e.getClickedBlock().getType(),e.getClickedBlock().getData());
 					//Setting station block phase
-					if(phase == 12) {
+					if(phase == 11) {
 						e.setCancelled(true);
 						Block bX = new Location(clickedLoc.getWorld(), clickedLoc.clone().getX()-1,clickedLoc.getY(),clickedLoc.getZ()).getBlock();
 						Block bZ = new Location(clickedLoc.getWorld(), clickedLoc.getX(),clickedLoc.getY(),clickedLoc.clone().getZ()-1).getBlock();
@@ -98,9 +99,12 @@ public class PlayerInteractListener implements Listener {
 						Block bZ2 = new Location(clickedLoc.getWorld(), clickedLoc.getX(),clickedLoc.getY(),clickedLoc.clone().getZ()+1).getBlock();
 						//if track direction coloration worked station is valid :D
 						if(changeNextRails(clickedRail, clickedLoc, Material.POWERED_RAIL, bX, bZ, 2, true, BlockFace.SELF) || changeNextRails(clickedRail, clickedLoc, Material.POWERED_RAIL, bX2, bZ2, -2, true, BlockFace.SELF)) {
-							if(!stlocEditor.containsKey(player) || pe.getStation().getStarts().size() == 0) {
-								stlocEditor.remove(player);
-								stlocEditor.put(player, clickedLoc);
+							if(!plugin.stlocEditor.containsKey(player) || pe.getStation().getStarts().size() == 0) {
+								plugin.stlocEditor.remove(player);
+								//Saving station track
+								ArrayList<Location> startcrea = new ArrayList<Location>();
+								startcrea.add(0, clickedLoc);
+								plugin.stlocEditor.put(player, startcrea);
 								//set station to detector rail
 								clickedLoc.getBlock().setType(Material.DETECTOR_RAIL);
 								clickedRail.setDirection(BlockFace.SELF, false);
@@ -108,22 +112,21 @@ public class PlayerInteractListener implements Listener {
 								//particles (useless, but it's good :33)
 								clickedLoc.getWorld().spawnParticle(Particle.FLAME, clickedLoc.add(0.5, 0.5, 0.5), 20, 0.1, 0.1, 0.1, 0.05);
 								//Messages
+								player.sendMessage(" ");
 								player.sendMessage("§aAdded station point: §f(§7§o" + clickedLoc.getX() + "§f, §7§o" + clickedLoc.getY() + "§f, §7§o" + clickedLoc.getZ() + "§f)");
 								player.sendMessage("§7§l§m-----");
-								player.sendMessage("§b★ Click on the §ldirection track§b §e(Powered Rail)§b just next to the station point §o(in what direction the minecart will be launched)");
-								player.sendMessage("§7★ Click on the §lstation track§7 §o(Detector Rail)§7 to set as a terminus");
-								new FancyMessage("[Cancel]").color(ChatColor.RED).tooltip("§cCancel").command("/minetrainconfig canceleditor").then(" ")
-								.then("[Pause editor to edit world]").color(ChatColor.LIGHT_PURPLE).style(ChatColor.ITALIC).tooltip("If you need to edit your world before this step, click here :D").command("/minetrainconfig pauseeditor").send(player);
+								plugin.getEditorMessages().sendEditorMessage(player, 12);
 								//New phase
-								pe.setPhase(13);
+								pe.setPhase(12);
 								return;
 							}
 						}
-					} else if(phase == 13) {
+					} else if(phase == 12) {
 						e.setCancelled(true);
-						if(stlocEditor.containsKey(player)) {
-							Location stLoc = stlocEditor.get(player);
-							if(e.getClickedBlock().getType() == Material.POWERED_RAIL && stLoc.distance(clickedLoc) <= 2) {
+						if(plugin.stlocEditor.containsKey(player)) {
+							ArrayList<Location> startcrea = plugin.stlocEditor.get(player);
+							Location stLoc = startcrea.get(0);
+							if((e.getClickedBlock().getType() == Material.POWERED_RAIL || e.getClickedBlock().getType() == Material.DETECTOR_RAIL)  && stLoc.distance(clickedLoc) <= 2) {
 								//Remove coloration
 								Block bX = new Location(stLoc.getWorld(), stLoc.clone().getX()-1,stLoc.getY(),stLoc.getZ()).getBlock();
 								Block bZ = new Location(stLoc.getWorld(), stLoc.getX(),stLoc.getY(),stLoc.clone().getZ()-1).getBlock();
@@ -134,24 +137,25 @@ public class PlayerInteractListener implements Listener {
 								changeNextRails(clickedRail, stLoc, Material.RAILS, bX, bZ, 2, false, BlockFace.SELF);
 								changeNextRails(clickedRail, stLoc, Material.RAILS, bX2, bZ2, -2, false, BlockFace.SELF);
 								//Activate direction track
-								e.getClickedBlock().setType(Material.RAILS);
-								clickedRail.setDirection(BlockFace.SELF, false);
-								e.getClickedBlock().setData(clickedRail.getData());
+								player.sendMessage(" ");
+								if(e.getClickedBlock().getType() == Material.DETECTOR_RAIL) {
+									player.sendMessage("§aSet this point as terminus.");
+								} else {
+									player.sendMessage("§aAdded direction point: §f(§7§o" + clickedLoc.getX() + "§f, §7§o" + clickedLoc.getY() + "§f, §7§o" + clickedLoc.getZ() + "§f)");
+									e.getClickedBlock().setType(Material.RAILS);
+									clickedRail.setDirection(BlockFace.SELF, false);
+									e.getClickedBlock().setData(clickedRail.getData());
+								}
+								//Add direction track
+								startcrea.add(1, clickedLoc);
+								plugin.stlocEditor.put(player, startcrea);
 								//particles (useless, but it's good :33)
 								clickedLoc.getWorld().spawnParticle(Particle.FLAME, clickedLoc.add(0.5, 0.5, 0.5), 20, 0.1, 0.1, 0.1, 0.05);
-								//Add start
-								Station station = pe.getStation();
-								station.addStarts(stLoc, clickedLoc);
 								//Next phase
-								stlocEditor.remove(player);
-								pe.setPhase(14);
+								pe.setPhase(13);
 								//Messages
-								player.sendMessage("§aAdded direction point: §f(§7§o" + clickedLoc.getX() + "§f, §7§o" + clickedLoc.getY() + "§f, §7§o" + clickedLoc.getZ() + "§f)");
 								player.sendMessage("§7§l§m-----");
-								player.sendMessage("§eThis station has " + station.getStarts().size() + " point(s) of departure");
-								new FancyMessage("[Cancel]").color(ChatColor.RED).tooltip("§cCancel").command("/minetrainconfig canceleditor")
-								.then(" ").then("[Add point of departure]").color(ChatColor.AQUA).tooltip("§aAdd point of departure (other directions ?)").command("/minetrainconfig addstationpoint")
-								.then(" ").then("[Next Step]").color(ChatColor.GOLD).style(ChatColor.BOLD).tooltip("§aGo to next step").command("/minetrainconfig stationpointnextstep").send(player);
+								plugin.getEditorMessages().sendEditorMessage(player, 13);
 								return;
 							}
 							player.sendMessage("§cThis direction track isn't valid.");
@@ -160,28 +164,109 @@ public class PlayerInteractListener implements Listener {
 					}
 				}
 				if(phase == 15) {
+					e.setCancelled(true);
+					if(e.getAction() != Action.RIGHT_CLICK_BLOCK)
+						return;
+					Station station = pe.getStation();
+					
 					//Setting button in front of clicked face
 					Location clickedLoc = e.getClickedBlock().getLocation();
 					BlockFace clickedFace = e.getBlockFace();
 					Block button = clickedLoc.getBlock().getRelative(clickedFace);
+					
+					//Checking nearby starts
+					int count = 0;
+					for(Location starts : station.getStartLocations()) {
+						if(starts.distance(button.getLocation()) <= 10) {
+							count++;
+						}
+					}
+					
+					//No nearby starts
+					if(count == 0) {
+						player.sendMessage("§4§l!§c There aren't nearby minecart starts §o(< 10m)§c at this location.");
+						return;
+					}
+					
+					//Setting button in world
 					button.setType(Material.WOOD_BUTTON);
 					Button but = new Button(button.getType(), button.getData());
 					but.setFacingDirection(clickedFace);
 					button.setData(but.getData());
+					
 					//Station button adding
-					Station station = pe.getStation();
-					station.addButton(clickedLoc);
+					station.addButton(button.getLocation());
+					
 					//particles (useless, but it's good :33)
 					clickedLoc.getWorld().spawnParticle(Particle.FLAME, button.getLocation().add(0.5, 0.5, 0.5), 20, 0.1, 0.1, 0.1, 0.05);
+					
 					//phase
 					pe.setPhase(16);
+					
 					//messages
+					player.sendMessage(" ");
 					player.sendMessage("§aAdded departure button: §f(§7§o" + clickedLoc.getX() + "§f, §7§o" + clickedLoc.getY() + "§f, §7§o" + clickedLoc.getZ() + "§f)");
 					player.sendMessage("§7§l§m-----");
-					player.sendMessage("§eThis station has " + station.getButtons().size() + " departure button(s)");
-					new FancyMessage("[Cancel]").color(ChatColor.RED).tooltip("§cCancel").command("/minetrainconfig canceleditor")
-					.then(" ").then("[Add departure button]").color(ChatColor.AQUA).tooltip("§aAdd departure button").command("/minetrainconfig adddeparturebutton")
-					.then(" ").then("[Finish and save]").color(ChatColor.GOLD).style(ChatColor.BOLD).tooltip("§aFinish").command("/minetrainconfig savestation").send(player);
+					plugin.getEditorMessages().sendEditorMessage(player, 16);
+					return;
+				}
+			}
+		}
+		//Click button destination
+		else if(e.getAction() == Action.RIGHT_CLICK_BLOCK) {
+			Location buttonLoc = e.getClickedBlock().getLocation();
+			if(e.getClickedBlock().getType().toString().contains("BUTTON")) {
+				if(plugin.getFileManager().isStationButton(buttonLoc)) {
+					if(player.hasPermission("minetrain.use")) {
+						Station station = plugin.getFileManager().getStationFromButton(buttonLoc);
+						
+						//gettint starts by lines
+						HashMap<Line, ArrayList<Location>> startsByLine = new HashMap<Line, ArrayList<Location>>();
+						for(Location startloc : station.getStartLocations()) {
+							ArrayList<Location> startlocs = new ArrayList<Location>();
+							Line line = plugin.getFileManager().getLine(station.getStartLineId(startloc));
+							if(startsByLine.containsKey(line))
+								startlocs = startsByLine.get(line);
+							startlocs.add(startloc);
+							startsByLine.put(line, startlocs);
+						}
+						
+						//If just one direction
+						int nbstarts = station.getStartLocations().size();
+						Location firstartloc = station.getStartLocations().get(0);
+						if(nbstarts == 1 && firstartloc.distance(station.getStartDirectionLocation(firstartloc)) != 0) {
+							player.sendMessage("§eStation§b " + station.getName());
+							player.performCommand("minetrain launchfrom " + plugin.getFileUtils().locationToString(station.getStartLocations().get(0)));
+							return;
+						}
+						
+						//Displaying destinations by lines
+						player.sendMessage("§eStation§b " + station.getName() + "§e - Destinations");
+						boolean warn_linedestinations = false;
+						int count = 0;
+						for(Line line : startsByLine.keySet()) {
+							for(Location start : startsByLine.get(line)) {
+								if(player.getLocation().distance(start) <= 10 && station.getStartDirection(start) != null) {
+									count++;
+									String nextstation = "§o?";
+									if(plugin.getLinesMap().getNextStop(start) != null) {
+										nextstation = plugin.getLinesMap().getNextStop(start).getName();
+									} else { warn_linedestinations = true; }
+									int distanceToPlayer = (int) start.distance(player.getLocation());
+									new FancyMessage(" •").color(ChatColor.GOLD).then(" ").then(line.getAcronym() + "§a in direction of §f" + nextstation + " §7§o(" + distanceToPlayer + " m)").color(ChatColor.GOLD).tooltip("§7Select this direction.")
+									.command("/minetrain launchfrom " + plugin.getFileUtils().locationToString(start)).send(player);
+								}
+							}
+						}
+						
+						//Warns
+						if(warn_linedestinations)
+							player.sendMessage("§c§l!§6 Some directions are missing because nobody take it for now.");
+						if(count == 0)
+							player.sendMessage("§9§l!§b This station has no departures.");
+						return;
+					}
+					player.sendMessage("§cSorry! You don't have permission to do that :(");
 					return;
 				}
 			}

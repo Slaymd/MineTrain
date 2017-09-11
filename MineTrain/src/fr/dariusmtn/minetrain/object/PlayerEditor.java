@@ -51,6 +51,4 @@ public class PlayerEditor {
 		this.obj = obj;
 	}
 	
-	
-	
 }

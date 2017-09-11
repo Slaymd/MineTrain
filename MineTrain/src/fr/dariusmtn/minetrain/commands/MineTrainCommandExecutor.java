@@ -1,18 +1,17 @@
 package fr.dariusmtn.minetrain.commands;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.UUID;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 
 import fr.dariusmtn.minetrain.Main;
 import fr.dariusmtn.minetrain.object.Line;
-import fr.dariusmtn.minetrain.object.LineType;
 import fr.dariusmtn.minetrain.object.PlayerEditor;
 import fr.dariusmtn.minetrain.object.Station;
 import mkremins.fanciful.FancyMessage;
@@ -25,35 +24,28 @@ public class MineTrainCommandExecutor implements CommandExecutor{
     }
     
     void createLine(Player player, String headmessage){
+    	player.sendMessage(" ");
     	player.sendMessage("§d§l➤ " + headmessage);
 		plugin.editor.put(player, new PlayerEditor(0,new Line()));
 		//Generate Line ID
 		plugin.editor.get(player).getLine().setLineId(UUID.randomUUID());
 		//LineType
-		player.sendMessage("§6➤ Select line type:");
-		for(LineType lt : EnumSet.allOf(LineType.class)) {
-			new FancyMessage(" •").color(ChatColor.GOLD).then(" ").then(lt.getName())
-			.color(ChatColor.AQUA).tooltip("§7Select §f" + lt.getName() + "§7 line type.")
-			.command("/minetrainconfig setlinetype " + lt.toString()).send(player);
-		}
-		new FancyMessage("[Cancel]").color(ChatColor.RED).tooltip("§cCancel").command("/minetrainconfig canceleditor").send(player);
-		player.sendMessage("§7§l§m-----");
+		
+		plugin.getEditorMessages().sendEditorMessage(player, 0);
     }
     
     void createStation(Player player) {
-    	player.sendMessage("§d§l➤ Make a new station.");
-    	plugin.editor.put(player, new PlayerEditor(10,new Station()));
-    	//Generate Station ID
-    	plugin.editor.get(player).getStation().setStationId(UUID.randomUUID());
-    	//Which line
-    	player.sendMessage("§6➤ To which line this station will be added?");
-    	for(Line ln : plugin.getFileManager().getLines()) {
-    		new FancyMessage(" •").color(ChatColor.GOLD).then(" ").then(ln.getLongname() + "§o " + ln.getLineType().getName())
-			.color(ChatColor.AQUA).tooltip("§7Select this line.")
-			.command("/minetrainconfig setstationline " + ln.getLineId()).send(player);
+    	if(plugin.getFileManager().getLines().size() > 0) {
+	    	player.sendMessage(" ");
+	    	player.sendMessage("§d§l➤ Make a new station.");
+	    	plugin.editor.put(player, new PlayerEditor(10,new Station()));
+	    	//Generate Station ID
+	    	plugin.editor.get(player).getStation().setStationId(UUID.randomUUID());
+	    	//Setting name
+	    	plugin.getEditorMessages().sendEditorMessage(player, 10);
+    	} else {
+    		player.sendMessage("§cYou need to make a line first!");
     	}
-    	new FancyMessage("[Cancel]").color(ChatColor.RED).tooltip("§cCancel").command("/minetrainconfig canceleditor").send(player);
-		player.sendMessage("§7§l§m-----");
     }
     
     @Override
@@ -65,8 +57,7 @@ public class MineTrainCommandExecutor implements CommandExecutor{
 					String subcmd = args[0];
 					//create subcommand
 					if(subcmd.equalsIgnoreCase("create")) {
-						//TODO permission
-						if(player.isOp()) {
+						if(player.hasPermission("minetrain.admin.create")) {
 							if(!plugin.editor.containsKey(player)) {
 								int linesnb = plugin.getFileManager().getLines().size();
 								if(args.length == 1) {
@@ -104,25 +95,67 @@ public class MineTrainCommandExecutor implements CommandExecutor{
 							player.sendMessage("§cYou are already in the editor.");
 							return false;
 						}
+						player.sendMessage("§cSorry! You don't have permission to do that :(");
+						return false;
 					}
-					//List command
-					if(subcmd.equalsIgnoreCase("list")) {
-						//HashMap<Line,ArrayList<Station>> linesWstation = new HashMap<Line,ArrayList<Station>>();
-						ArrayList<Station> stations = plugin.getFileManager().getStations();
-						player.sendMessage("station nb: " + plugin.getFileManager().getStations().size());
-						for(Station station : stations) {
-							if(station != null) {
-								player.sendMessage("§7" + station.getName() + " §b| loc: " + station.getStarts().toString());
+					//Launch minecart (hidden command) (from station button)
+					if(subcmd.equalsIgnoreCase("launchfrom")) {
+						if(args.length == 2) {
+							Location startloc = plugin.getFileUtils().stringToLocation(args[1]);
+							if(player.getLocation().distance(startloc) <= 10) {
+								Station station = plugin.getFileManager().getStationsStarts().get(startloc);
+								Minecart cart = startloc.getWorld().spawn(startloc, Minecart.class);
+								cart.addPassenger(player);
+								cart.setVelocity(station.getStartDirection(startloc).multiply(0.1));
+								plugin.playerLastStation.put(player, null);
 							}
 						}
 						return true;
+					}
+					//List command
+					if(subcmd.equalsIgnoreCase("list")) {
+						if(player.hasPermission("minetrain.admin.list")) {
+							//Lines
+							player.sendMessage("§6§lLINES");
+							for(Line line : plugin.getFileManager().getLines()) {
+								FancyMessage fm = new FancyMessage(" • ").color(ChatColor.GOLD).then("§a" + line.getName());
+								//Edit
+								if(player.hasPermission("minetrain.admin.edit"))
+									fm.then(" ").then("[✏]").color(ChatColor.AQUA).tooltip("§cEdit this line").command("/minetrainconfig editline " + line.getLineId().toString());
+								//Delete
+								if(player.hasPermission("minetrain.admin.remove"))
+									fm.then(" ").then("[✕]").color(ChatColor.RED).tooltip("§cDelete this line").command("/minetrainconfig deleteline " + line.getLineId().toString());
+								//Send
+								fm.send(player);
+							}
+							//Stations
+							player.sendMessage("§6§lSTATIONS");
+							for(Station station : plugin.getFileManager().getStations()) {
+								FancyMessage fm = new FancyMessage(" • ").color(ChatColor.GOLD).then("§a" + station.getName());
+								//Edit
+								if(player.hasPermission("minetrain.admin.edit"))
+									fm.then(" ").then("[✏]").color(ChatColor.AQUA).tooltip("§cEdit this station").command("/minetrainconfig editstation " + station.getStationId().toString());
+								//Delete
+								if(player.hasPermission("minetrain.admin.remove"))
+									fm.then(" ").then("[✕]").color(ChatColor.RED).tooltip("§cDelete this station").command("/minetrainconfig deletestation " + station.getStationId().toString());
+								//Send
+								fm.send(player);
+							}
+							return true;
+						}
+						player.sendMessage("§cSorry! You don't have permission to do that :(");
+						return false;
 					}
 				}
 				player.sendMessage("§bMineTrain v" + plugin.getDescription().getVersion() + " by §lSlaymd§b.");
 				player.sendMessage("§7§l§m-----");
 				player.sendMessage("§6§lCREATE LINE OR STATION");
-				player.sendMessage("§e/mtn §2create");
+				new FancyMessage("§e/mtn §2create").tooltip("§bClick here!").command("/minetrain create").send(player);
+				player.sendMessage("§7§lLIST OF ALL LINES & STATIONS");
+				new FancyMessage("§e/mtn §blist").tooltip("§bClick here!").command("/minetrain list").send(player);
 				player.sendMessage("§7§l§m-----");
+				player.sendMessage("§d§lJOIN US!§e Come on §nDiscord§e :D (discuss, help, bugs...)");
+				player.sendMessage("§bhttps://discord.gg/w628upr");
 			}
 		}
     	return false;

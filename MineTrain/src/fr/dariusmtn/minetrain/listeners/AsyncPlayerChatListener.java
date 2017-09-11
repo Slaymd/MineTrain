@@ -1,6 +1,5 @@
 package fr.dariusmtn.minetrain.listeners;
 
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -10,7 +9,6 @@ import fr.dariusmtn.minetrain.Main;
 import fr.dariusmtn.minetrain.object.Line;
 import fr.dariusmtn.minetrain.object.PlayerEditor;
 import fr.dariusmtn.minetrain.object.Station;
-import mkremins.fanciful.FancyMessage;
 
 public class AsyncPlayerChatListener implements Listener{
 	
@@ -30,13 +28,11 @@ public class AsyncPlayerChatListener implements Listener{
 			//Line name
 			if(phase == 1) { 
 				Line line = pe.getLine();
-				line.setLongname(msg);
-				player.sendMessage("§aLine name: §f" + line.getLongname());
+				line.setName(msg);
+				player.sendMessage(" ");
+				player.sendMessage("§aLine name: §f" + line.getName());
 				player.sendMessage("§7§l§m-----");
-				player.sendMessage("§6➤ What is the line acronym? §o(Ex: L1 or L-Red)");
-				player.sendMessage("§b✏ Write it in the chat §o(color codes allowed)");
-				player.sendMessage("§7✏ Write §f§onothing§7 for no acronym");
-				new FancyMessage("[Cancel]").color(ChatColor.RED).tooltip("§cCancel").command("/minetrainconfig canceleditor").send(player);
+				plugin.getEditorMessages().sendEditorMessage(player, 2);
 				pe.setPhase(2);
 			} 
 			//Line acronym
@@ -46,28 +42,25 @@ public class AsyncPlayerChatListener implements Listener{
 				if(msg.equalsIgnoreCase("nothing"))
 					msg = "";
 				//Setting acronym
-				line.setSmallname(msg);
+				line.setAcronym(msg);
+				player.sendMessage(" ");
 				if(msg != "") {
-					player.sendMessage("§aLine acronym: §f" + line.getSmallname());
+					player.sendMessage("§aLine acronym: §f" + line.getAcronym());
 					player.sendMessage("§7§l§m-----");
 				}
-				player.sendMessage("§2§l➤ That's right?");
-				player.sendMessage("§eLine: §o" + line.getLineType().getName() + "§e " + line.getLongname() + "§e " + (msg == "" ? "" : "(" + line.getSmallname() + "§e)"));
-				new FancyMessage("[Cancel]").color(ChatColor.RED).tooltip("§cCancel").command("/minetrainconfig canceleditor")
-				.then(" ").then("[Save it!]").color(ChatColor.GREEN).style(ChatColor.BOLD).tooltip("§aSave as a new line").command("/minetrainconfig saveline").send(player);
+				plugin.getEditorMessages().sendEditorMessage(player, 3);
+				pe.setPhase(3);
 			} 
 			//Station name
-			else if(phase == 11) {
+			else if(phase == 10) {
 				Station st = pe.getStation();
 				//Setting name
 				st.setName(msg);
+				player.sendMessage(" ");
 				player.sendMessage("§aStation name: §f" + st.getName());
 				player.sendMessage("§7§l§m-----");
-				player.sendMessage("§6➤ Add a minecart launcher");
-				player.sendMessage("§b★ Click on the station track §o(where the minecart will be stopped)");
-				new FancyMessage("[Cancel]").color(ChatColor.RED).tooltip("§cCancel").command("/minetrainconfig canceleditor").then(" ")
-				.then("[Pause editor to edit world]").color(ChatColor.LIGHT_PURPLE).style(ChatColor.ITALIC).tooltip("If you need to edit your world before this step, click here :D").command("/minetrainconfig pauseeditor").send(player);
-				pe.setPhase(12);
+				plugin.getEditorMessages().sendEditorMessage(player, 11);
+				pe.setPhase(11);
 			}
 		}
 	}

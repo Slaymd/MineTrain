@@ -20,8 +20,12 @@ public class FileManager {
           this.plugin = instance; 
     }
     
+    //Caches (prevent file load/unload every seconds...)
     private ArrayList<Station> stationsCache = new ArrayList<Station>();
+    private ArrayList<Line> linesCache = new ArrayList<Line>();
+    
     private HashMap<Location,Station> stationsByLoc = new HashMap<Location,Station>();
+    private HashMap<Location,Station> stationByButton = new HashMap<Location,Station>();
     
     /**
      *  
@@ -44,6 +48,30 @@ public class FileManager {
     }
     
     /**
+     * Getting station by button location
+     * @param loc
+     * @return
+     */
+    public Station getStationFromButton(Location loc) {
+    	if(stationsCache.size() == 0)
+    		this.updateStationCache();
+    	return this.stationByButton.get(loc);
+    }
+    
+    /**
+     * Check if location is a station button
+     * @param loc
+     * @return
+     */
+    public boolean isStationButton(Location loc) {
+    	if(stationsCache.size() == 0)
+    		this.updateStationCache();
+    	if(this.stationByButton.containsKey(loc))
+    		return true;
+    	return false;
+    }
+    
+    /**
      * update station cache from file
      */
     public void updateStationCache() {
@@ -62,14 +90,20 @@ public class FileManager {
     		e.printStackTrace();
     	}
     	stationsCache = stations;
-    	//Stations starts cache reset
-    	this.stationsByLoc.clear();
-    	for(Station station : getStations()) {
-    		for(Location start : station.getStarts().keySet()) {
-    			this.stationsByLoc.put(start, station);
-    		}
+    	if(stationsCache.size() > 0) {
+	    	//Stations starts cache reset
+	    	this.stationsByLoc.clear();
+	    	for(Station station : getStations()) {
+	    		for(Location start : station.getStarts().keySet()) {
+	    			this.stationsByLoc.put(start, station);
+	    		}
+	    		for(Location button : station.getButtons()) {
+	    			this.stationByButton.put(button, station);
+	    		}
+	    	}
     	}
     }
+    
     
     /**
      * 
@@ -81,15 +115,27 @@ public class FileManager {
 	    	File stationsfile = new File(plugin.getDataFolder(), "stations.yml");
 			stationsfile.createNewFile();
 			FileConfiguration stationsconfig = YamlConfiguration.loadConfiguration(stationsfile);
-			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("name", stationsconfig.get("Stations." + stationId + ".name"));
-			map.put("city", stationsconfig.get("Stations." + stationId + ".city"));
-			map.put("lineId", stationsconfig.get("Stations." + stationId + ".lineId"));
-			map.put("starts.loc", stationsconfig.get("Stations." + stationId + ".starts.loc"));
-			map.put("starts.dir", stationsconfig.get("Stations." + stationId + ".starts.dir"));
-			map.put("buttons", stationsconfig.get("Stations." + stationId + ".buttons"));
-			Station station = new Station(map, plugin);
-			return station;
+			if(stationsconfig.isSet("Stations." + stationId)) {
+				Map<String, Object> map = new HashMap<String, Object>();
+				map.put("id", stationId.toString());
+				map.put("name", stationsconfig.get("Stations." + stationId + ".name"));
+				map.put("city", stationsconfig.get("Stations." + stationId + ".city"));
+				//Starts
+				HashMap<Location, ArrayList<Object>> starts = new HashMap<Location, ArrayList<Object>>();
+				for(String loc : stationsconfig.getConfigurationSection("Stations." + stationId + ".starts").getKeys(false)) {
+					ArrayList<String> startsserialized = (ArrayList<String>) stationsconfig.getStringList("Stations." + stationId + ".starts." + loc);
+					Location startdir = plugin.getFileUtils().stringToLocation(startsserialized.get(0));
+					UUID startlineid = UUID.fromString(startsserialized.get(1));
+					ArrayList<Object> startcontent = new ArrayList<Object>();
+					startcontent.add(0, startdir);startcontent.add(1, startlineid);
+					Location startloc = plugin.getFileUtils().stringToLocation(loc.replace("*", "."));
+					starts.put(startloc, startcontent);
+				}
+				map.put("buttons", stationsconfig.get("Stations." + stationId + ".buttons"));
+				Station station = new Station(map, starts, plugin);
+				return station;
+			}
+			return null;
     	} catch (Exception e) {
     		e.printStackTrace();
     		return null;
@@ -108,7 +154,7 @@ public class FileManager {
 			stationsconfig.set("Stations." + station.getStationId().toString(), null);
 			stationsconfig.save(stationsfile);
 			//update cache
-			this.updateStationCache();
+			this.clearStationCache();
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
@@ -126,10 +172,16 @@ public class FileManager {
 			stationsconfig.set("Stations." + station.getStationId().toString(), station.serialize(plugin));
 			stationsconfig.save(stationsfile);
 			//update cache
-			this.updateStationCache();
+			this.clearStationCache();
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
+    }
+    
+    private void clearStationCache() {
+    	this.stationsByLoc.clear();
+    	this.stationsCache.clear();
+    	this.stationByButton.clear();
     }
     
     /**
@@ -137,21 +189,9 @@ public class FileManager {
      * @return ArrayList<Line>
      */
     public ArrayList<Line> getLines() {
-    	ArrayList<Line> lines = new ArrayList<Line>();
-    	try {
-	    	File linesfile = new File(plugin.getDataFolder(), "lines.yml");
-			linesfile.createNewFile();
-			FileConfiguration linesconfig = YamlConfiguration.loadConfiguration(linesfile);
-			if(linesconfig.isSet("Lines")) {
-				for(String lineId : linesconfig.getConfigurationSection("Lines").getKeys(false)) {
-					lines.add(getLine(UUID.fromString(lineId)));
-				}
-			}
-			return lines;
-    	} catch (Exception e) {
-    		e.printStackTrace();
-    		return null;
-    	}
+    	if(linesCache.size() == 0)
+    		this.updateLineCache();
+    	return linesCache;
     }
     
     /**
@@ -164,13 +204,16 @@ public class FileManager {
 	    	File linesfile = new File(plugin.getDataFolder(), "lines.yml");
 			linesfile.createNewFile();
 			FileConfiguration linesconfig = YamlConfiguration.loadConfiguration(linesfile);
-			Map<String, Object> map = new HashMap<String, Object>();
-			map.put("longname", linesconfig.get("Lines." + lineId + ".longname"));
-			map.put("smallname", linesconfig.get("Lines." + lineId + ".smallname"));
-			map.put("lineId", linesconfig.get("Lines." + lineId + ".lineId"));
-			map.put("linetype", linesconfig.get("Lines." + lineId + ".linetype"));
-			Line line = new Line(map);
-			return line;
+			if(linesconfig.isSet("Lines." + lineId)) {
+				Map<String, Object> map = new HashMap<String, Object>();
+				map.put("longname", linesconfig.get("Lines." + lineId + ".longname"));
+				map.put("smallname", linesconfig.get("Lines." + lineId + ".smallname"));
+				map.put("lineId", lineId);
+				map.put("linetype", linesconfig.get("Lines." + lineId + ".linetype"));
+				Line line = new Line(map);
+				return line;
+			}
+			return null;
     	} catch (Exception e) {
     		e.printStackTrace();
     		return null;
@@ -188,6 +231,8 @@ public class FileManager {
 			FileConfiguration linesconfig = YamlConfiguration.loadConfiguration(linesfile);
 			linesconfig.set("Lines." + line.getLineId().toString(), null);
 			linesconfig.save(linesfile);
+			//update cache
+			this.clearLineCache();
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
@@ -204,9 +249,35 @@ public class FileManager {
 			FileConfiguration linesconfig = YamlConfiguration.loadConfiguration(linesfile);
 			linesconfig.set("Lines." + line.getLineId().toString(), line.serialize());
 			linesconfig.save(linesfile);
+			//update cache
+			this.clearLineCache();
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
+    }
+    
+    /**
+     * update line cache from file
+     */
+    public void updateLineCache() {
+    	ArrayList<Line> lines = new ArrayList<Line>();
+    	try {
+	    	File linesfile = new File(plugin.getDataFolder(), "lines.yml");
+			linesfile.createNewFile();
+			FileConfiguration linesconfig = YamlConfiguration.loadConfiguration(linesfile);
+			if(linesconfig.isSet("Lines")) {
+				for(String lineId : linesconfig.getConfigurationSection("Lines").getKeys(false)) {
+					lines.add(getLine(UUID.fromString(lineId)));
+				}
+			}
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    	}
+    	this.linesCache = lines;
+    }
+    
+    private void clearLineCache() {
+    	this.linesCache.clear();
     }
 
 }
