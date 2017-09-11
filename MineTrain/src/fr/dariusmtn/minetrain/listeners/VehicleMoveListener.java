@@ -58,11 +58,20 @@ public class VehicleMoveListener implements Listener {
 						Vector cartvelo = cart.getVelocity();
 						double norme = vectorNorm(cartvelo);
 						if(nearestSt.size() > 0) {
+							Location playerLastLoc = plugin.playerLastStation.get(player);
+							Station lastStation = new Station();
+							if(playerLastLoc != null)
+								lastStation = plugin.getFileManager().getStationsStarts().get(plugin.playerLastStation.get(player));
 							for(Location station : nearestSt) {
 								Station st = plugin.getFileManager().getStationsStarts().get(station);
 								//brake
 								double dist = station.distance(cart.getLocation());
-								if(dist <= 4 && dist >= 0.6) {
+								if(st.getStationId() == lastStation.getStationId()) {
+									//if the cart is launched from a station A (start 1) and braked by station A (start 2), we cancel that brake because
+									//the cart must be braked by another station who launched it.
+									nearestSt = new ArrayList<Location>();
+									break;
+								} else if(dist <= 4 && dist >= 0.6) {
 									double mult = norme < 0.5 ? norme : 0.9;
 									if(norme >= 0.25)
 										cartvelo.multiply(mult);
@@ -95,16 +104,26 @@ public class VehicleMoveListener implements Listener {
 													if(plugin.getLinesMap().getNextStop(station) != null) {
 														Station nextstop = plugin.getLinesMap().getNextStop(station);
 														player.sendTitle("", "§eNext stop:§b " + nextstop.getName(), 10, 40, 10);
-														String corresp = "§e, change for:§7 ";
-														if(nextstop.getLinesId().size() == 1) {
+														String corresp = "§e. Change for:§7 ";
+														
+														//Line changes / searching acronyms
+														ArrayList<String> lineschange = new ArrayList<String>();
+														for(UUID lineId : nextstop.getLinesId()) {
+															if(!st.getStartLineId(station).toString().equals(lineId.toString())) {
+																Line changeLine = plugin.getFileManager().getLine(lineId);
+																String changeLineAcro = changeLine.getAcronym();
+																if(!lineschange.contains(changeLineAcro)) {
+																	lineschange.add(changeLineAcro);
+																}
+															}
+														}
+														
+														//Line changes / text
+														if(lineschange.size() == 0) {
 															corresp = "";
 														} else {
-															for(UUID lineId : nextstop.getLinesId()) {
-																if(!lineId.equals(st.getStartLineId(station))) {
-																	Line line = plugin.getFileManager().getLine(lineId);
-																	corresp += line.getAcronym() + "§7";
-																	corresp += " ";
-																}
+															for(String changeLineAcro : lineschange) {
+																corresp += changeLineAcro + "§7 ";
 															}
 														}
 														player.sendMessage("§eNext Stop:§b " + nextstop.getName() + corresp);
@@ -115,7 +134,9 @@ public class VehicleMoveListener implements Listener {
 									},60);
 								}
 							}
-						} else if(norme < 1.40) {
+						}
+						//Speed while no station near
+						if(norme < 1.40 && nearestSt.size() == 0) {
 							double mult = 1/norme;
 							if(mult > 1) {
 								cartvelo.multiply(mult);
