@@ -9,6 +9,10 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.data.Directional;
+import org.bukkit.block.data.MultipleFacing;
+import org.bukkit.block.data.Rotatable;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -177,9 +181,12 @@ public class PlayerInteractListener implements Listener {
 					
 					//Setting button in front of clicked face
 					Location clickedLoc = e.getClickedBlock().getLocation();
+
 					BlockFace clickedFace = e.getBlockFace();
 					Block button = clickedLoc.getBlock().getRelative(clickedFace);
-					
+
+
+
 					//Checking nearby starts
 					int count = 0;
 					for(Location starts : station.getStartLocations()) {
@@ -196,8 +203,23 @@ public class PlayerInteractListener implements Listener {
 					
 					//Setting button in world
 					button.setType(Material.OAK_BUTTON);
-					Button but = new Button(button.getType());
+					/*Button but = new Button(button.getType());
 					but.setFacingDirection(clickedFace);
+*/
+
+					BlockState bs = button.getState();
+					Button b = (Button) bs.getData();
+					b.setFacingDirection(clickedFace);
+					bs.setData(b);
+					bs.update();
+
+					button.setBlockData(bs.getBlockData());
+			/*
+					MultipleFacing rot = (MultipleFacing) button.getBlockData();
+				//	rot.setFacing(clickedFace);
+					rot.setFace(clickedFace, true);
+					button.setBlockData(rot);*/
+
 					//button.setData(but.getData());
 					
 					//Station button adding
