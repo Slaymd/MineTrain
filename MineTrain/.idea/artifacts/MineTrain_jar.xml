@@ -1,11 +1,9 @@
 <component name="ArtifactManager">
-  <artifact name="MineTrain:jar">
-    <output-path>$PROJECT_DIR$/target/MineTrain_jar</output-path>
-    <root id="root">
-      <element id="archive" name="MineTrain.jar">
-        <element id="module-output" name="MineTrain" />
-      </element>
-      <element id="file-copy" path="$PROJECT_DIR$/../../patched_1.13.2.jar" />
+  <artifact type="jar" name="MineTrain:jar">
+    <output-path>$PROJECT_DIR$/target/</output-path>
+    <root id="archive" name="MineTrain.jar">
+      <element id="module-output" name="MineTrain" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/../../patched_1.13.2.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

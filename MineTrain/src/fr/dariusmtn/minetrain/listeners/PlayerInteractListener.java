@@ -33,17 +33,17 @@ public class PlayerInteractListener implements Listener {
 	@SuppressWarnings("deprecation")
 	boolean changeNextRails(Rails clickedRail, Location clickedLoc, Material finalMaterial, Block bX, Block bZ, int mod, boolean particles, BlockFace face){
 		if(bX.getType().toString().contains("RAIL")) {
-			Rails bXRail = new Rails(bX.getType(),bX.getData());
+			Rails bXRail = new Rails(bX.getType());
 			if(bXRail.getDirection() == clickedRail.getDirection()) {
 				bX.setType(finalMaterial);
 				bXRail.setDirection(face, false);
-				bX.setData(bXRail.getData());
+				//bX.setData(bXRail.getData());
 				Block bXFar = bX.getLocation().clone().add(mod, 0, 0).getBlock();
 				if(bXFar.getType().toString().contains("RAIL")) {
-					Rails bXFarRail = new Rails(bXFar.getType(),bXFar.getData());
+					Rails bXFarRail = new Rails(bXFar.getType());
 					bXFar.setType(finalMaterial);
 					bXFarRail.setDirection(face, false);
-					bXFar.setData(bXFarRail.getData());
+					//bXFar.setData(bXFarRail.getData());
 					if(particles)
 						bXFar.getWorld().spawnParticle(Particle.END_ROD, bXFar.getLocation().add(0.5, 0.5, 0.5), 10, 0.1, 0.1, 0.1, 0.05);
 				}
@@ -54,17 +54,17 @@ public class PlayerInteractListener implements Listener {
 			}
 		}
 		if(bZ.getType().toString().contains("RAIL")) {
-			Rails bZRail = new Rails(bZ.getType(),bZ.getData());
+			Rails bZRail = new Rails(bZ.getType());
 			if(bZRail.getDirection() == clickedRail.getDirection()) {
 				bZ.setType(finalMaterial);
 				bZRail.setDirection(face, false);
-				bZ.setData(bZRail.getData());
+				//bZ.setData(bZRail.getData());
 				Block bZFar = bZ.getLocation().clone().add(0, 0, mod).getBlock();
 				if(bZFar.getType().toString().contains("RAIL")) {
-					Rails bZFarRail = new Rails(bZFar.getType(),bZFar.getData());
+					Rails bZFarRail = new Rails(bZFar.getType());
 					bZFar.setType(finalMaterial);
 					bZFarRail.setDirection(face, false);
-					bZFar.setData(bZFarRail.getData());
+					//bZFar.setData(bZFarRail.getData());
 					if(particles)
 						bZFar.getWorld().spawnParticle(Particle.END_ROD, bZFar.getLocation().add(0.5, 0.5, 0.5), 10, 0.1, 0.1, 0.1, 0.05);
 				}
@@ -102,19 +102,19 @@ public class PlayerInteractListener implements Listener {
 								Block bZ = new Location(stLoc.getWorld(), stLoc.getX(),stLoc.getY(),stLoc.clone().getZ()-1).getBlock();
 								Block bX2 = new Location(stLoc.getWorld(), stLoc.clone().getX()+1,stLoc.getY(),stLoc.getZ()).getBlock();
 								Block bZ2 = new Location(stLoc.getWorld(), stLoc.getX(),stLoc.getY(),stLoc.clone().getZ()+1).getBlock();
-								changeNextRails(clickedRail, stLoc, Material.RAILS, bX, bZ, 2, false, BlockFace.SELF);
-								changeNextRails(clickedRail, stLoc, Material.RAILS, bX2, bZ2, -2, false, BlockFace.SELF);
-								changeNextRails(clickedRail, stLoc, Material.RAILS, bX, bZ, 2, false, BlockFace.SELF);
-								changeNextRails(clickedRail, stLoc, Material.RAILS, bX2, bZ2, -2, false, BlockFace.SELF);
+								changeNextRails(clickedRail, stLoc, Material.RAIL, bX, bZ, 2, false, BlockFace.SELF);
+								changeNextRails(clickedRail, stLoc, Material.RAIL, bX2, bZ2, -2, false, BlockFace.SELF);
+								changeNextRails(clickedRail, stLoc, Material.RAIL, bX, bZ, 2, false, BlockFace.SELF);
+								changeNextRails(clickedRail, stLoc, Material.RAIL, bX2, bZ2, -2, false, BlockFace.SELF);
 								//Activate direction track
 								player.sendMessage(" ");
 								if(e.getClickedBlock().getType() == Material.DETECTOR_RAIL) {
 									player.sendMessage("§aSet this point as terminus.");
 								} else {
 									player.sendMessage("§aAdded direction point: §f(§7§o" + clickedLoc.getX() + "§f, §7§o" + clickedLoc.getY() + "§f, §7§o" + clickedLoc.getZ() + "§f)");
-									e.getClickedBlock().setType(Material.RAILS);
+									e.getClickedBlock().setType(Material.RAIL);
 									clickedRail.setDirection(BlockFace.SELF, false);
-									e.getClickedBlock().setData(clickedRail.getData());
+								//	e.getClickedBlock().setData(clickedRail.getData());
 								}
 								//Add direction track
 								startcrea.add(1, clickedLoc);
@@ -149,7 +149,7 @@ public class PlayerInteractListener implements Listener {
 								//set station to detector rail
 								clickedLoc.getBlock().setType(Material.DETECTOR_RAIL);
 								clickedRail.setDirection(BlockFace.SELF, false);
-								e.getClickedBlock().setData(clickedRail.getData());
+							//	e.getClickedBlock().setData(clickedRail.getData());
 								//particles (useless, but it's good :33)
 								clickedLoc.getWorld().spawnParticle(Particle.FLAME, clickedLoc.add(0.5, 0.5, 0.5), 20, 0.1, 0.1, 0.1, 0.05);
 								//Messages
@@ -195,10 +195,10 @@ public class PlayerInteractListener implements Listener {
 					}
 					
 					//Setting button in world
-					button.setType(Material.WOOD_BUTTON);
-					Button but = new Button(button.getType(), button.getData());
+					button.setType(Material.OAK_BUTTON);
+					Button but = new Button(button.getType());
 					but.setFacingDirection(clickedFace);
-					button.setData(but.getData());
+					//button.setData(but.getData());
 					
 					//Station button adding
 					station.addButton(button.getLocation());
