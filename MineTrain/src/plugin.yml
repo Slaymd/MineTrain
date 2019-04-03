@@ -1,7 +1,7 @@
 main: fr.dariusmtn.minetrain.Main
 version: b0.1
 name: MineTrain
-author: [Slaymd, poma123]
+author: Slaymd
 api-version: 1.13
 commands:
   minetrain:
