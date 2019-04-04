@@ -4,10 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import fr.dariusmtn.minetrain.events.NextStopBroadcastEvent;
+import fr.dariusmtn.minetrain.events.StationReachEvent;
+import fr.dariusmtn.minetrain.events.TerminusEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.vehicle.VehicleMoveEvent;
@@ -88,6 +93,9 @@ public class VehicleMoveListener implements Listener {
 									//Message
 									String[] stationMessage = plugin.getConfig().getString("titles.station").split("%newline%");
 
+									Object event = new StationReachEvent(player, st);
+									Bukkit.getPluginManager().callEvent((Event) event);
+
 									player.sendTitle( stationMessage[0].replace("%station%", st.getName()), stationMessage[1].replace("%station%", st.getName()), 10, 40, 10);
 
 
@@ -103,12 +111,20 @@ public class VehicleMoveListener implements Listener {
 													cart.eject();
 													cart.remove();
 													plugin.playerLastStation.remove(player);
+
+													Object event = new TerminusEvent(player);
+													Bukkit.getPluginManager().callEvent((Event) event);
+
 												} else {
 													cart.setVelocity(vector.multiply(0.1));
 													if(plugin.getLinesMap().getNextStop(station) != null) {
 														Station nextstop = plugin.getLinesMap().getNextStop(station);
 														String[] nextStopTitle = plugin.getConfig().getString("titles.next_stop").split("%newline%");
 														player.sendTitle(nextStopTitle[0].replace("%nextstop%", nextstop.getName()), nextStopTitle[1].replace("%nextstop%", nextstop.getName()), 10, 40, 10);
+
+														Object event = new NextStopBroadcastEvent(player, nextstop);
+														Bukkit.getPluginManager().callEvent((Event) event);
+
 													//	String corresp = "§e. Change for:§7 ";
 														String corresp = plugin.getConfig().getString("messages.change_for");
 
