@@ -5,3 +5,14 @@ nearby_entities_manager: true
 
 #Modes: PUSH, KILL_ALL, KILL_NOPLAYER
 nearby_entities_manager_mode: PUSH
+
+#Configurable messages
+messages:
+  change_for: "§e. Change for:§7 "
+  next_stop: "§eNext Stop:§b %nextstop%"
+  terminus: '§cTerminus.'
+
+#Configurable title messages
+titles:
+  next_stop: "%newline%§eNext stop:§b %nextstop%"
+  station: "§bStation%newline%§e%station%"

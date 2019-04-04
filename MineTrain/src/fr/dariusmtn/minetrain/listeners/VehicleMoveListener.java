@@ -86,7 +86,11 @@ public class VehicleMoveListener implements Listener {
 									//Set last station
 									plugin.playerLastStation.put(player, station);
 									//Message
-									player.sendTitle("§bStation", "§e" + st.getName(), 10, 40, 10);
+									String[] stationMessage = plugin.getConfig().getString("titles.station").split("%newline%");
+
+									player.sendTitle( stationMessage[0].replace("%station%", st.getName()), stationMessage[1].replace("%station%", st.getName()), 10, 40, 10);
+
+
 									//Launch after 3 seconds stop
 									Vector vector = st.getStartDirection(station);
 									plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable(){
@@ -95,7 +99,7 @@ public class VehicleMoveListener implements Listener {
 											if(cart.getPassengers().contains(player)) {
 												if(vector == null) {
 													//terminus
-													player.sendMessage("§aTerminus.");
+													player.sendMessage(plugin.getConfig().getString("messages.terminus"));
 													cart.eject();
 													cart.remove();
 													plugin.playerLastStation.remove(player);
@@ -103,9 +107,11 @@ public class VehicleMoveListener implements Listener {
 													cart.setVelocity(vector.multiply(0.1));
 													if(plugin.getLinesMap().getNextStop(station) != null) {
 														Station nextstop = plugin.getLinesMap().getNextStop(station);
-														player.sendTitle("", "§eNext stop:§b " + nextstop.getName(), 10, 40, 10);
-														String corresp = "§e. Change for:§7 ";
-														
+														String[] nextStopTitle = plugin.getConfig().getString("titles.next_stop").split("%newline%");
+														player.sendTitle(nextStopTitle[0].replace("%nextstop%", nextstop.getName()), nextStopTitle[1].replace("%nextstop%", nextstop.getName()), 10, 40, 10);
+													//	String corresp = "§e. Change for:§7 ";
+														String corresp = plugin.getConfig().getString("messages.change_for");
+
 														//Line changes / searching acronyms
 														ArrayList<String> lineschange = new ArrayList<String>();
 														for(UUID lineId : nextstop.getLinesId()) {
@@ -126,7 +132,8 @@ public class VehicleMoveListener implements Listener {
 																corresp += changeLineAcro + "§7 ";
 															}
 														}
-														player.sendMessage("§eNext Stop:§b " + nextstop.getName() + corresp);
+														String nextStopMessage = plugin.getConfig().getString("messages.next_stop").replace("%nextstop%", nextstop.getName());
+														player.sendMessage(nextStopMessage + corresp);
 													}
 												}
 											}
