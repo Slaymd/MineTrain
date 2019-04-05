@@ -1,6 +1,6 @@
 package fr.dariusmtn.minetrain.events;
 
-import fr.dariusmtn.minetrain.object.Station;
+
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;

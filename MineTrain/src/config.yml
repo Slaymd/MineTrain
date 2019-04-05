@@ -7,12 +7,25 @@ nearby_entities_manager: true
 nearby_entities_manager_mode: PUSH
 
 #Configurable messages
+#
+#Placeholders:
+# %station% (in station_destinations)
+# %line_acronym% (in destinations)
+# %line_name% (in destinations)
+# %distance% (in destinations)
+# %nextstop% (in destinations, change_for)
 messages:
-  change_for: "§e. Change for:§7 "
-  next_stop: "§eNext Stop:§b %nextstop%"
+  destinations: '%line_acronym% §ain direction of §f%nextstop% §7§o(%distance% m)'
+  station_destinations: '§eStation§b %station%§e - Destinations'
+  change_for: '§e. Change for:§7 '
+  next_stop: '§eNext Stop:§b %nextstop%'
   terminus: '§cTerminus.'
+  direction_select_tooltip: '§7Select this direction.'
 
 #Configurable title messages
+#
+#Placeholders:
+# %station% (in station)
 titles:
+  station: '§bStation%newline%§e%station%'
   next_stop: "%newline%§eNext stop:§b %nextstop%"
-  station: "§bStation%newline%§e%station%"

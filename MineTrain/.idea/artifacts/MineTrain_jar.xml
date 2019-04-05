@@ -3,7 +3,6 @@
     <output-path>$PROJECT_DIR$/target/</output-path>
     <root id="archive" name="MineTrain.jar">
       <element id="module-output" name="MineTrain" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../patched_1.13.2.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

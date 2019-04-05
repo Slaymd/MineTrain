@@ -93,8 +93,10 @@ public class VehicleMoveListener implements Listener {
 									//Message
 									String[] stationMessage = plugin.getConfig().getString("titles.station").split("%newline%");
 
-									Object event = new StationReachEvent(player, st);
-									Bukkit.getPluginManager().callEvent((Event) event);
+									if (st.getStationId() != lastStation.getStationId()) {
+										Object event = new StationReachEvent(player, st);
+										Bukkit.getPluginManager().callEvent((Event) event);
+									}
 
 									player.sendTitle( stationMessage[0].replace("%station%", st.getName()), stationMessage[1].replace("%station%", st.getName()), 10, 40, 10);
 
