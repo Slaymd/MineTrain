@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="MineTrain:jar">
-    <output-path>$PROJECT_DIR$/target/</output-path>
-    <root id="archive" name="MineTrain.jar">
-      <element id="module-output" name="MineTrain" />
-    </root>
-  </artifact>
-</component>

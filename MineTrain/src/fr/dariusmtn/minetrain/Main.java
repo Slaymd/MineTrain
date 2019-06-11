@@ -3,6 +3,7 @@ package fr.dariusmtn.minetrain;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
@@ -54,13 +55,16 @@ public class Main extends JavaPlugin{
 		@SuppressWarnings("unused")
 		Metrics metrics = new Metrics(this);
 
-
 		String ver = getServer().getClass().getPackage().getName();
 		String sub = ver.substring(ver.lastIndexOf('.') + 1);
 		version = sub;
 
 	}
-	
+
+
+	public void onDisable() {
+		Bukkit.getPluginManager().disablePlugin(this);
+	}
 	/**
 	 * Lines map AI
 	 * @return
