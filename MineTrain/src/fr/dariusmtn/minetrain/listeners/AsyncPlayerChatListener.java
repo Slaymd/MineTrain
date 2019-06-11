@@ -9,6 +9,7 @@ import fr.dariusmtn.minetrain.Main;
 import fr.dariusmtn.minetrain.object.Line;
 import fr.dariusmtn.minetrain.object.PlayerEditor;
 import fr.dariusmtn.minetrain.object.Station;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class AsyncPlayerChatListener implements Listener{
 	
@@ -32,7 +33,12 @@ public class AsyncPlayerChatListener implements Listener{
 				player.sendMessage(" ");
 				player.sendMessage("§aLine name: §f" + line.getName());
 				player.sendMessage("§7§l§m-----");
-				plugin.getEditorMessages().sendEditorMessage(player, 2);
+				new BukkitRunnable() {
+					public void run() {
+						plugin.getEditorMessages().sendEditorMessage(player, 2);
+					}
+				}.runTaskLater(plugin, 1);
+
 				pe.setPhase(2);
 			} 
 			//Line acronym
@@ -48,7 +54,11 @@ public class AsyncPlayerChatListener implements Listener{
 					player.sendMessage("§aLine acronym: §f" + line.getAcronym());
 					player.sendMessage("§7§l§m-----");
 				}
-				plugin.getEditorMessages().sendEditorMessage(player, 3);
+				new BukkitRunnable() {
+					public void run() {
+						plugin.getEditorMessages().sendEditorMessage(player, 3);
+					}
+				}.runTaskLater(plugin, 1);
 				pe.setPhase(3);
 			} 
 			//Station name
@@ -59,7 +69,12 @@ public class AsyncPlayerChatListener implements Listener{
 				player.sendMessage(" ");
 				player.sendMessage("§aStation name: §f" + st.getName());
 				player.sendMessage("§7§l§m-----");
-				plugin.getEditorMessages().sendEditorMessage(player, 11);
+				new BukkitRunnable() {
+					public void run() {
+						plugin.getEditorMessages().sendEditorMessage(player, 11);
+					}
+				}.runTaskLater(plugin, 1);
+
 				pe.setPhase(11);
 			}
 		}

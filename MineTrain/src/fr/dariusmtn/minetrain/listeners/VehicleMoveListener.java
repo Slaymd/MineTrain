@@ -1,15 +1,27 @@
 package fr.dariusmtn.minetrain.listeners;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import fr.dariusmtn.minetrain.events.NextStopBroadcastEvent;
+import fr.dariusmtn.minetrain.events.StationReachEvent;
+import fr.dariusmtn.minetrain.events.TerminusEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
@@ -17,6 +29,7 @@ import org.bukkit.util.Vector;
 import fr.dariusmtn.minetrain.Main;
 import fr.dariusmtn.minetrain.object.Line;
 import fr.dariusmtn.minetrain.object.Station;
+import org.spigotmc.event.entity.EntityDismountEvent;
 
 public class VehicleMoveListener implements Listener {
 	
@@ -32,6 +45,78 @@ public class VehicleMoveListener implements Listener {
 	
 	ArrayList<Minecart> stoppedcarts = new ArrayList<Minecart>();
 
+
+	@EventHandler
+	public void onDismount(VehicleExitEvent e) {
+		if (e.getVehicle() instanceof  Minecart) {
+			Minecart cart = (Minecart) e.getVehicle();
+			if(stoppedcarts.contains(cart)) {
+				return;
+			}
+
+			if (!cart.getPassengers().isEmpty()) {
+				if(cart.getPassengers().get(0) instanceof Player) {
+					Player player = (Player) cart.getPassengers().get(0);
+					if (plugin.playerLastStation.containsKey(player)) {
+						e.setCancelled(true);
+					}
+				}
+			}
+		}
+	}
+
+
+	@EventHandler
+	public void onPlayerQuit(PlayerQuitEvent e)  {
+		Player player = e.getPlayer();
+		if (plugin.playerLastStation.containsKey(player)) {
+			File f = new File(plugin.getDataFolder() + File.separator + "players_left.yml");
+			if (!f.exists()) {
+				try {
+					f.createNewFile();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			}
+			FileConfiguration yml = YamlConfiguration.loadConfiguration(f);
+
+			yml.set("players." + e.getPlayer().getName(), plugin.playerLastStation.get(e.getPlayer()));
+			try {
+				yml.save(f);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		}
+	}
+
+	@EventHandler
+	public void onPlayerJoin(PlayerJoinEvent e)  {
+		new BukkitRunnable() {
+			public void run() {
+				if (e.getPlayer().isInsideVehicle()) {
+					File f = new File(plugin.getDataFolder() + File.separator + "players_left.yml");
+					if (!f.exists()) {
+						try {
+							f.createNewFile();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+					}
+					FileConfiguration yml = YamlConfiguration.loadConfiguration(f);
+					if (yml.get("players." + e.getPlayer().getName()) != null) {
+						plugin.playerLastStation.put(e.getPlayer(), (Location) yml.get("players." + e.getPlayer().getName()));
+						yml.set("players." + e.getPlayer().getName(), null);
+						try {
+							yml.save(f);
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+					}
+				}
+			}
+		}.runTaskLater(plugin, 20);
+
+	}
 	@EventHandler
 	public void onVehicleMove(VehicleMoveEvent e) {
 		if(e.getVehicle() instanceof Minecart) {
@@ -86,7 +171,16 @@ public class VehicleMoveListener implements Listener {
 									//Set last station
 									plugin.playerLastStation.put(player, station);
 									//Message
-									player.sendTitle("§bStation", "§e" + st.getName(), 10, 40, 10);
+									String[] stationMessage = plugin.getConfig().getString("titles.station").split("%newline%");
+
+									if (st.getStationId() != lastStation.getStationId()) {
+										Object event = new StationReachEvent(player, st);
+										Bukkit.getPluginManager().callEvent((Event) event);
+									}
+
+									player.sendTitle( stationMessage[0].replace("%station%", st.getName()), stationMessage[1].replace("%station%", st.getName()), 10, 40, 10);
+
+
 									//Launch after 3 seconds stop
 									Vector vector = st.getStartDirection(station);
 									plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, new Runnable(){
@@ -95,17 +189,27 @@ public class VehicleMoveListener implements Listener {
 											if(cart.getPassengers().contains(player)) {
 												if(vector == null) {
 													//terminus
-													player.sendMessage("§aTerminus.");
+													player.sendMessage(plugin.getConfig().getString("messages.terminus"));
 													cart.eject();
 													cart.remove();
 													plugin.playerLastStation.remove(player);
+
+													Object event = new TerminusEvent(player);
+													Bukkit.getPluginManager().callEvent((Event) event);
+
 												} else {
 													cart.setVelocity(vector.multiply(0.1));
 													if(plugin.getLinesMap().getNextStop(station) != null) {
 														Station nextstop = plugin.getLinesMap().getNextStop(station);
-														player.sendTitle("", "§eNext stop:§b " + nextstop.getName(), 10, 40, 10);
-														String corresp = "§e. Change for:§7 ";
-														
+														String[] nextStopTitle = plugin.getConfig().getString("titles.next_stop").split("%newline%");
+														player.sendTitle(nextStopTitle[0].replace("%nextstop%", nextstop.getName()), nextStopTitle[1].replace("%nextstop%", nextstop.getName()), 10, 40, 10);
+
+														Object event = new NextStopBroadcastEvent(player, nextstop);
+														Bukkit.getPluginManager().callEvent((Event) event);
+
+													//	String corresp = "§e. Change for:§7 ";
+														String corresp = plugin.getConfig().getString("messages.change_for");
+
 														//Line changes / searching acronyms
 														ArrayList<String> lineschange = new ArrayList<String>();
 														for(UUID lineId : nextstop.getLinesId()) {
@@ -126,7 +230,8 @@ public class VehicleMoveListener implements Listener {
 																corresp += changeLineAcro + "§7 ";
 															}
 														}
-														player.sendMessage("§eNext Stop:§b " + nextstop.getName() + corresp);
+														String nextStopMessage = plugin.getConfig().getString("messages.next_stop").replace("%nextstop%", nextstop.getName());
+														player.sendMessage(nextStopMessage + corresp);
 													}
 												}
 											}

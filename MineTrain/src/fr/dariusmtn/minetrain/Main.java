@@ -3,6 +3,7 @@ package fr.dariusmtn.minetrain;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
@@ -33,7 +34,8 @@ public class Main extends JavaPlugin{
 	public HashMap<Player,Location> playerLastStation = new HashMap<Player,Location>();
 	
 	public HashMap<Player,ArrayList<Location>> stlocEditor = new HashMap<Player,ArrayList<Location>>();
-	
+	public String version;
+
 	public void onEnable() {
 		ConfigurationSerialization.registerClass(Line.class);
 		//Commands executors
@@ -48,12 +50,21 @@ public class Main extends JavaPlugin{
 		plugman.registerEvents(new VehicleExitListener(this), this);
 		plugman.registerEvents(new VehicleDestroyListener(this), this);
 		//Config
-		this.saveDefaultConfig();
+		saveDefaultConfig();
 		//Stats (bstats) https://bstats.org/plugin/bukkit/MineTrain
 		@SuppressWarnings("unused")
 		Metrics metrics = new Metrics(this);
+
+		String ver = getServer().getClass().getPackage().getName();
+		String sub = ver.substring(ver.lastIndexOf('.') + 1);
+		version = sub;
+
 	}
-	
+
+
+	public void onDisable() {
+		Bukkit.getPluginManager().disablePlugin(this);
+	}
 	/**
 	 * Lines map AI
 	 * @return
@@ -76,6 +87,15 @@ public class Main extends JavaPlugin{
 	 */
 	public FileUtils getFileUtils() {
 		return fileUtils;
+	}
+
+
+	/**
+	 * Returns server version
+	 * @return
+	 */
+	public String getVersion() {
+		return version;
 	}
 	
 	/**

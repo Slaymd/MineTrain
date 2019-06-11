@@ -1,7 +1,0 @@
-#MineTrain Carts move/clean nearby entities and if true, why.
-#It serve to prevents Minecarts to stop due to a fu**in Creeper on the tracks!
-#WARNING: CAN PRODUCE LAGS.
-nearby_entities_manager: true
-
-#Modes: PUSH, KILL_ALL, KILL_NOPLAYER
-nearby_entities_manager_mode: PUSH

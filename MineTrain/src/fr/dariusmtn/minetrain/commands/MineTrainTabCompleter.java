@@ -16,6 +16,7 @@ public class MineTrainTabCompleter implements TabCompleter {
 			if(args.length == 1) {
 				subcmds.add("create");
 				subcmds.add("list");
+				subcmds.add("reload");
 				return subcmds;
 			} else if (args[0].equalsIgnoreCase("create") && args.length >= 2) {
 				subcmds.add("line");

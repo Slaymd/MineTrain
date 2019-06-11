@@ -15,7 +15,7 @@ public class VehicleExitListener implements Listener {
 		this.plugin = plugin;
 	}
 	
-	@EventHandler
+	@EventHandler(ignoreCancelled = true)
 	public void onVehicleExit(VehicleExitEvent e) {
 		if(e.getExited() instanceof Player) {
 			if(e.getVehicle() instanceof Minecart) {
